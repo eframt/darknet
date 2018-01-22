@@ -251,7 +251,7 @@ void draw_detections(image im, int num, float thresh, box *boxes, float **probs,
                     strcat(labelstr, ", ");
                     strcat(labelstr, names[j]);
                 }
-                printf("%s: %.0f%%\n", names[j], probs[i][j]*100);
+                printf("%s: %.0f%%\t", names[j], probs[i][j]*100);
             }
         }
         if(class >= 0){
@@ -278,6 +278,21 @@ void draw_detections(image im, int num, float thresh, box *boxes, float **probs,
             rgb[2] = blue;
             box b = boxes[i];
 
+            /* ========= added on 3-nov-17 by EMM ============= */
+            printf("Object position (center) -> X: %.2f Y: %.2f\n", b.w, b.h);
+
+			char tmpBuffx[4], tmpBuffy[4];
+			char *imLabel = malloc(strlen(names[class]) + strlen(" x:") + strlen(tmpBuffx) + strlen(" y:") + strlen(tmpBuffy) + 1);
+			sprintf(tmpBuffx, "%.1f", b.x);
+			sprintf(tmpBuffy, "%.1f", b.y);
+
+			strcpy(imLabel, names[class]);
+			strcat(imLabel, " x:");
+			strcat(imLabel, tmpBuffx);
+			strcat(imLabel, " y:");
+			strcat(imLabel, tmpBuffy);
+			/* ========= added on 3-nov-17 by EMM ============= */
+
             int left  = (b.x-b.w/2.)*im.w;
             int right = (b.x+b.w/2.)*im.w;
             int top   = (b.y-b.h/2.)*im.h;
@@ -290,9 +305,11 @@ void draw_detections(image im, int num, float thresh, box *boxes, float **probs,
 
             draw_box_width(im, left, top, right, bot, width, red, green, blue);
             if (alphabet) {
-                image label = get_label(alphabet, labelstr, (im.h*.03)/10);
+                //image label = get_label(alphabet, labelstr, (im.h*.03)/10);
+            	image label = get_label(alphabet, imLabel, (im.h*.03)/10); // mod by EMM
                 draw_label(im, top + width, left, label, rgb);
                 free_image(label);
+                free(imLabel);
             }
             if (masks){
                 image mask = float_to_image(14, 14, 1, masks[i]);
